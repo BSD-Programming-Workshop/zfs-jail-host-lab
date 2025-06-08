@@ -21,7 +21,7 @@
 - name: Make a lab dataset
   community.general.zfs:
     name: "{{ zfs_pool }}/lab"
-    properties:
+    extra_zfs_properties:
       mountpoint: /lab
     state: present
   become: yes
