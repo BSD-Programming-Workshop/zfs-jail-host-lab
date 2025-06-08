@@ -2,48 +2,94 @@
 
 A comprehensive Ansible playbook for setting up and managing ZFS-based jail hosts.
 
-## Prerequisites
-
-- Ansible 2.9 or higher
-- Python 3.6 or higher
-- Access to a FreeBSD system with ZFS support
-- Root or sudo access to target hosts
-
 ## Project Structure
 
 ```
 .
-├── inventory/           # Inventory files for different environments
-├── group_vars/         # Group-specific variables
-├── host_vars/          # Host-specific variables
-├── roles/              # Ansible roles
-├── playbooks/          # Main playbooks
-├── README.md           # This file
-└── .gitignore         # Git ignore file
+├── virtual-lab/                # Main lab setup playbook
+│   ├── ansible.cfg
+│   ├── hosts
+│   ├── group_vars/
+│   │   └── all/
+│   │       └── config         # Configuration variables
+│   ├── roles/
+│   │   └── lab_host/
+│   │       ├── states/        # Salt states for lab host
+│   │       │   ├── base/
+│   │       │   │   ├── etc/   # Base configuration files
+│   │       │   │   ├── init.sls  # Base initialization
+│   │       │   │   ├── users.sls  # User configuration
+│   │       │   │   └── minion.j2  # Salt minion configuration
+│   │       │   └── update/
+│   │       │       ├── etc/    # Update configuration files
+│   │       │       ├── init.sls  # Update initialization
+│   │       │       └── httpd.conf  # Apache configuration
+│   │       ├── tasks/        # Ansible tasks
+│   │       │   └── main.yml  # Main task file
+│   │       └── templates/    # Configuration templates
+│   │           ├── devfs.rules    # Device file system rules
+│   │           ├── jail.conf     # Jail configuration
+│   │           ├── master        # Salt master configuration
+│   │           ├── pf.conf      # Packet filter configuration
+│   │           ├── resolv.conf  # DNS resolver configuration
+│   │           └── resolvconf.conf  # Resolver configuration
+│   └── playbook.yml
+├── add-client-to-virtual-lab/  # Playbook for adding additional jails
+│   ├── ansible.cfg
+│   ├── hosts
+│   ├── group_vars/
+│   │   └── all/
+│   │       └── config         # Configuration variables
+│   ├── roles/
+│   │   └── lab_client/
+│   │       ├── tasks/        # Ansible tasks
+│   │       │   ├── main.yml  # Main task file
+│   │       │   └── add_lab_client.yml  # Jail addition tasks
+│   │       └── templates/    # Configuration templates
+│   │           ├── resolv.conf  # DNS resolver configuration
+│   │           └── resolvconf.conf  # Resolver configuration
+│   └── playbook.yml
+└── README.md
 ```
 
-## Getting Started
+## Usage
+
+### Setting Up the Lab Environment
 
 1. Clone this repository:
 ```bash
 git clone https://github.com/BSD-Programming-Workshop/zfs-jail-host-lab.git
 ```
 
-2. Install Ansible if not already installed:
+2. Configure the lab environment:
+- Edit `virtual-lab/hosts` to specify your lab host
+- Update configuration variables in `virtual-lab/group_vars/all/config`
+
+3. Run the lab setup playbook:
 ```bash
-pip install ansible
+cd virtual-lab
+ansible-playbook -i hosts playbook.yml
 ```
 
-3. Configure your inventory:
-- Copy `inventory/example` to `inventory/production`
-- Update host entries in `inventory/production`
+### Adding Additional Jails
 
-4. Run the playbook:
+1. Configure the new jail:
+- Edit `add-client-to-virtual-lab/hosts` to specify the lab host
+- Update jail configuration in `add-client-to-virtual-lab/group_vars/all/config`
+
+2. Run the jail addition playbook:
 ```bash
-ansible-playbook -i inventory/production site.yml
+cd add-client-to-virtual-lab
+ansible-playbook -i hosts playbook.yml
 ```
 
-## Features
+## License
+
+This project is licensed under the BSD 3-Clause License - see the LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 - ZFS pool configuration
 - Jail host setup
