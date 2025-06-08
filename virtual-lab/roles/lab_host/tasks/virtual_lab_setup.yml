@@ -14,7 +14,7 @@
 
 - name: Download base.txz from FreeBSD.org for our lab machines to use
   get_url:
-    url: http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/13.2-RELEASE/base.txz
+    url: http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/{{ freebsd_version }}-RELEASE/base.txz
     dest: "{{ download_dir }}/base.txz"
     force: false
 
