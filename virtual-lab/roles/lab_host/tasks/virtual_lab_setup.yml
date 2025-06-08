@@ -18,6 +18,13 @@
     dest: "{{ download_dir }}/base.txz"
     force: false
 
+- name: Make a lab dataset
+  community.general.zfs:
+    name: "{{ zfs_pool }}/lab"
+    mountpoint: /lab
+    state: present
+  become: yes
+
 - name: Make a lab media dataset
   community.general.zfs:
     name: lab/media
