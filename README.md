@@ -141,7 +141,7 @@ Now we're ready to enable jails. A simple `sysrc jail_enable=YES` will do the tr
 Note: We're running all the following commands as the root user. Type `sudo -i` to become root.
 
 # edit jail.conf
-vim /etc/jail.conf
+`vim /etc/jail.conf`
 
 # put the following into /etc/jail.conf
 
@@ -177,19 +177,20 @@ tar -xpf /lab/media/13.1-RELEASE/base.txz -C /lab/gateway
 vim /etc/jail.conf
 
 # add to the bottom of the file
+```
 gateway {
   ip4=inherit;
 }
-
+```
 # feel free to add a user account with the following command, for this article we're just going to be using root
-chroot /lab/gateway adduser
+`chroot /lab/gateway adduser`
 
 # set the root password
-chroot /lab/gateway passwd root
+`chroot /lab/gateway passwd root`
 
 # setup DNS resolution using OpenDNS servers
 # edit resolv.conf
-vim /lab/gateway/etc/resolv.conf
+`vim /lab/gateway/etc/resolv.conf`
 
 # add the following lines to resolv.conf
 ```
@@ -198,25 +199,25 @@ nameserver 208.67.220.220
 ```
 
 # copy the hosts time zone setting
-cp /etc/localtime /lab/gateway/etc/
+`cp /etc/localtime /lab/gateway/etc/`
 
 # create an empty file system table
-touch /lab/gateway/etc/fstab
+`touch /lab/gateway/etc/fstab`
 
 # start jail
-jail -vc gateway
+`jail -vc gateway`
 
 # login to jail
-jexec -l gateway login -f root
+`jexec -l gateway login -f root`
 
 # list jails
-jls
+`jls`
 
 # stop jail
-jail -vr gateway
+`jail -vr gateway`
 
 # edit devfs.rules
-vim /etc/devfs.rules
+`vim /etc/devfs.rules`
 
 # add the following lines to devfs.rules
 ```
@@ -226,13 +227,13 @@ add path 'bpf*' unhide
 ```
 
 # restart devfs
-service devfs restart
+`service devfs restart`
 
 # verify devfs rules
-devfs rule showsets
+`devfs rule showsets`
 
 # assign ruleset to gateway jail
-vim /etc/jail.conf
+`vim /etc/jail.conf`
 
 # add the following line to the gateway { } config block
 ```
@@ -240,10 +241,10 @@ vim /etc/jail.conf
 ```
 
 # restart the gateway jail
-service jail restart gateway
+`service jail restart gateway`
 
 # verify ruleset was applied to gateway jail
-jls -j gateway devfs_ruleset
+`jls -j gateway devfs_ruleset`
 
 # we expect to see 666 as the output of the above command
 
@@ -254,10 +255,10 @@ kldload pf
 ```
 
 # enable PF on gateway jail
-sysrc -j gateway pf_enable=YES
+`sysrc -j gateway pf_enable=YES`
 
 # edit pf.conf on gateway jail
-vim /lab/gateway/etc/pf.conf
+`vim /lab/gateway/etc/pf.conf`
 
 # add the following config
 ```
@@ -369,11 +370,11 @@ tar -xpf /lab/media/13.1-RELEASE/base.txz -C /lab/client1
 ```
 
 # set the root password
-chroot /lab/client1 passwd root
+`chroot /lab/client1 passwd root`
 
 # setup DNS resolution using OpenDNS servers
 # edit resolv.conf
-vim /lab/client1/etc/resolv.conf
+`vim /lab/client1/etc/resolv.conf`
 
 # add the following lines to resolv.conf
 ```
@@ -382,10 +383,10 @@ nameserver 208.67.220.220
 ```
 
 # copy the hosts time zone setting
-cp /etc/localtime /lab/client1/etc/
+`cp /etc/localtime /lab/client1/etc/`
 
 # create an empty file system table
-touch /lab/client1/etc/fstab
+`touch /lab/client1/etc/fstab`
 
 # start jail
 ```
@@ -397,7 +398,7 @@ service jail restart client1
 ```
 
 # login to jail
-jexec -l client1 login -f root
+`jexec -l client1 login -f root`
 
 # test connectivity
 ```
@@ -411,7 +412,7 @@ fetch -o .tcshrc http://bsd.pw/config/tcshrc
 chsh -s tcsh
 ```
 # exit the jail
-logout
+`logout`
 
 Next time you login you'll have a green prompt due to the tcshrc settings, enjoy! Now you have a virtual lab with it's own virtual network that has a physical interface reserved for the outbound connection to the internet. Since we named the interface lab0 we can easily update it. Go ahead and give that a try. For instance, you can plug in an Android phone that has an internet connection, WiFi or Cellular is fine as either will do. Go to the network settings on the phone after you plug it into the host and enable USB Tethering. A ue0 interface will now be available for use. Update the line in `/etc/rc.conf` that says ifconfig_alc0_name="lab0" to be ifconfig_ue0_name="lab0". Reboot. Login to either jail and test connectivity. Your network has been swapped out. Your lab is now mobile! I really hope you had fun following along with this article. I'm super passionate about FreeBSD and sharing what I learn with others brings me joy. Thank you for your time and attention, I hope you do amazing things with FreeBSD in your lab. I look forward to chatting with many of you at one of the fantastic BSD conferences.
 
