@@ -28,7 +28,9 @@
 
 - name: Make a lab media dataset
   community.general.zfs:
-    name: lab/media
+    name: "{{ zfs_pool }}/lab/media"
+    extra_zfs_properties:
+      mountpoint: /lab/media
     state: present
   become: yes
 
@@ -40,7 +42,7 @@
       
 - name: Create gateway dataset
   community.general.zfs:
-    name: lab/gateway
+    name: "{{ zfs_pool }}/lab/gateway"
     state: present
   become: yes
 
@@ -210,7 +212,9 @@
 
 - name: make the dataset for the salt jail
   community.general.zfs:
-    name: lab/salt
+    name: "{{ zfs_pool }}/lab/salt"
+    extra_zfs_properties:
+      mountpoint: /lab/salt
     state: present
   become: yes
 
