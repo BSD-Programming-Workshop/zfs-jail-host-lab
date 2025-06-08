@@ -1,6 +1,14 @@
 # ZFS Jail Host Lab
+# Virtual Lab - BSD Programming Workshop
 
-A comprehensive Ansible playbook for setting up and managing ZFS-based jail hosts.
+A comprehensive set of Ansible playbooks for setting up and managing FreeBSD Jails in a Lab environment.
+
+## Discussion happening over at https://github.com/possnfiffer/bsd-programming-workshop/discussions/6
+
+
+Our virtual lab will consist of a FreeBSD Host system that uses the FreeBSD Jails technology to provide each system we want to install within the lab its own separate environment to run services and perfom its duties. These duties could be any number of things like serving up web pages, storing and retrieving database records, querying and answering DNS requests, caching system update files, etc. The idea is to build a solid foundation that will enable future growth for our virtual lab. Given that the nature of FreeBSD Jails is to provide a lightweight system for containing our services, we can rest assured knowing that any number of rabbit holes we may find ourselves in won't limit our creativity or exploration due to reaching our resource limitations. We can have a separate environment for each idea and not have to worry about the expense of provisioning another operating system to support the services necesary for that idea to flourish. I've experimented with many different methods of hosting operating system installs for my work and I'm pleasently suprised by the peace of mind I get when provisioning a new jail. It's so economical! I'm no longer burdened with a financial concern and a question of how long this expense will be ongoing, rather it's just another environment in my ever growing lab and doesn't inherently come with a minimum monthly fee to use it. Not to get too technical and go down a financial rabbit hole regarding the cost of electricity, internet connectivity, host hardware; yes, I agree those things have a cost, but once they are in place, the addition of new hosts isn't anywhere near the considerations and expenses that go into the initial lab setup. I recommend repurposing an existing machine as the host machine, maybe even a laptop, as it comes with a built in battery backup, giving you time to gracefully shutdown your systems in the event of a sustained power outage. The issue of needing multiple physical network interfaces to connect physical Ethernet switches to Ethernet cables and access points that your physical hosts will use are not a material concern in our virtual lab. These interfaces can be created with words in a text file and virtual Ethernet cables can be created to connect the pieces of our virtual network. 
+
+
 
 ## Project Structure
 
@@ -98,25 +106,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Package management
 - Service configuration
 
-## Contributing
-
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-# Virtual Lab - BSD Programming Workshop
-
-## Discussion happening over at https://github.com/possnfiffer/bsd-programming-workshop/discussions/6
-
-
-Our virtual lab will consist of a FreeBSD Host system that uses the FreeBSD Jails technology to provide each system we want to install within the lab its own separate environment to run services and perfom its duties. These duties could be any number of things like serving up web pages, storing and retrieving database records, querying and answering DNS requests, caching system update files, etc. The idea is to build a solid foundation that will enable future growth for our virtual lab. Given that the nature of FreeBSD Jails is to provide a lightweight system for containing our services, we can rest assured knowing that any number of rabbit holes we may find ourselves in won't limit our creativity or exploration due to reaching our resource limitations. We can have a separate environment for each idea and not have to worry about the expense of provisioning another operating system to support the services necesary for that idea to flourish. I've experimented with many different methods of hosting operating system installs for my work and I'm pleasently suprised by the peace of mind I get when provisioning a new jail. It's so economical! I'm no longer burdened with a financial concern and a question of how long this expense will be ongoing, rather it's just another environment in my ever growing lab and doesn't inherently come with a minimum monthly fee to use it. Not to get too technical and go down a financial rabbit hole regarding the cost of electricity, internet connectivity, host hardware; yes, I agree those things have a cost, but once they are in place, the addition of new hosts isn't anywhere near the considerations and expenses that go into the initial lab setup. I recommend repurposing an existing machine as the host machine, maybe even a laptop, as it comes with a built in battery backup, giving you time to gracefully shutdown your systems in the event of a sustained power outage. The issue of needing multiple physical network interfaces to connect physical Ethernet switches to Ethernet cables and access points that your physical hosts will use are not a material concern in our virtual lab. These interfaces can be created with words in a text file and virtual Ethernet cables can be created to connect the pieces of our virtual network. 
 
 
 ### Understanding the processors you have in your FreeBSD Host for use in the lab
@@ -162,7 +157,7 @@ stop.timeout=30;
 mount.devfs;
 exec.consolelog="/var/tmp/${host.hostname}";
 
-### base.txz
+### base.txz - this is the base system image that we'll use to create our jails, swap 13.1-RELEASE for the version you're using
 sudo -i
 mkdir -p /lab/media/13.1-RELEASE
 cd /lab/media/13.1-RELEASE
@@ -251,11 +246,15 @@ sysrc -j gateway pf_enable=YES
 vim /lab/gateway/etc/pf.conf
 
 # add the following config
-############################
+```
 ext_if = "e0b_gateway"
 int_if = "e1b_gateway"
 
-table <rfc1918> const { 192.168.0.0/16, 172.16.0.0/12, 10.0.0.0/8 }
+table <rfc1918> const {
+    192.168.0.0/16,
+    172.16.0.0/12,
+    10.0.0.0/8
+}
 
 # Allow anything on loopback
 set skip on lo0
@@ -263,26 +262,26 @@ set skip on lo0
 # Scrub all incoming traffic
 scrub in
 
+# Don't NAT traffic between internal networks
 no nat on $ext_if from $int_if:network to <rfc1918>
 
-# NAT outoging traffic
+# NAT outgoing traffic
 nat on $ext_if inet from $int_if:network to any -> ($ext_if:0)
 
-# Reject anything with spoofed addresses
+# Prevent IP spoofing
 antispoof quick for { $int_if, lo0 } inet
 
-# Default to blocking incoming traffic but allowing outgoing traffic
+# Default policy
 block all
 pass out all
 
-# Allow LAN to access the rest of the world
+# Allow LAN traffic
 pass in on $int_if from any to any
 block in on $int_if from any to self
 
-# Allow LAN to ping us
+# Allow ICMP echo requests (ping)
 pass in on $int_if inet proto icmp to self icmp-type echoreq
-
-############################
+```
 
 ### Configuring the Virtual Network
 
