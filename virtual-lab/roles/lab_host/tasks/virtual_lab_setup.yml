@@ -280,9 +280,9 @@
   when: rename_interface_to_lab0.changed
   become: yes
      
-- name: Install py39-salt on salt
+- name: Install py-salt on salt
   community.general.pkgng:
-    name: py39-salt
+    name: py{{ python_version|replace('.', '') }}-salt
     state: latest
     jail: salt
   register: salt_installed_on_salt_master
