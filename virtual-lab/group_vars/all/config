@@ -1,6 +1,6 @@
 python_version: "3.11"
 
-freebsd_version: "14.2-RELEASE"
+freebsd_version: "14.2"
 
 download_dir: /home/roller/Downloads
 
