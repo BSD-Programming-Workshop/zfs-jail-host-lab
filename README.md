@@ -160,14 +160,18 @@ exec.consolelog="/var/tmp/${host.hostname}";
 ```
 
 ### base.txz - this is the base system image that we'll use to create our jails, swap 13.1-RELEASE for the version you're using
+```
 sudo -i
 mkdir -p /lab/media/13.1-RELEASE
 cd /lab/media/13.1-RELEASE
 fetch http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/13.1-RELEASE/base.txz
+```
 
 ### Gateway jail
+```
 mkdir /lab/gateway
 tar -xpf /lab/media/13.1-RELEASE/base.txz -C /lab/gateway
+```
 
 # edit jail.conf
 vim /etc/jail.conf
@@ -244,8 +248,10 @@ jls -j gateway devfs_ruleset
 # we expect to see 666 as the output of the above command
 
 # load PF kernel module on host
+```
 sysrc -f /boot/loader.conf pf_load=YES
 kldload pf
+```
 
 # enable PF on gateway jail
 sysrc -j gateway pf_enable=YES
@@ -294,15 +300,18 @@ pass in on $int_if inet proto icmp to self icmp-type echoreq
 ### Configuring the Virtual Network
 
 # setup an interface. Here we're using the dedicated network card named alc0 and assigning it a name of labupstream. All further configuration will use the interface name labupstream and the actual physical device it's assigned to can be changed by editing one line of configuration. This way it's easy to switch our interface if we move our lab to another host or add a new network interface down the road with a different name such as igb0, re0, or em0.
+```
 sysrc ifconfig_alc0_name=lab0
 sysrc ifconfig_lab0=up
 service netif restart
+```
 
 # copy the Jail Interface Bridge automation script into our lab scripts directory and make it executable
+```
 mkdir /lab/scripts
 cp /usr/share/examples/jails/jib /lab/scripts/
 chmod +x /lab/scripts/jib
-
+```
 
 # Gateway jail.conf entry
 ```
@@ -316,22 +325,27 @@ gateway {
 ```
 
 # create the internal LAN network for the jails in the lab
+```
 sysrc cloned_interfaces=lo1
 sysrc ifconfig_lo1_name=labnet
 sysrc ifconfig_labnet=up
 service netif restart
-
+```
 
 # destroy and recreate gateway
+```
 jail -vr gateway
 jail -vc gateway
+```
 
 # configure networking for gateway jail
+```
 sysrc -j gateway gateway_enable=YES
 sysrc -j gateway ifconfig_e0b_gateway=SYNCDHCP
 sysrc -j gateway ifconfig_e1b_gateway="inet 10.66.6.1/24"
 service jail restart gateway
 jexec -l gateway login -f root
+```
 
 # create another jail that only has one interface that's attached to the labnet LAN network
 vim /etc/jail.conf
@@ -349,8 +363,10 @@ client1 {
 ```
 
 # make the directory structure for the new jail
+```
 mkdir /lab/client1
 tar -xpf /lab/media/13.1-RELEASE/base.txz -C /lab/client1
+```
 
 # set the root password
 chroot /lab/client1 passwd root
@@ -372,24 +388,28 @@ cp /etc/localtime /lab/client1/etc/
 touch /lab/client1/etc/fstab
 
 # start jail
+```
 jail -vc client1
 
 sysrc -j client1 ifconfig_e0b_client1="inet 10.66.6.2/24"
 sysrc -j client1 defaultrouter="10.66.6.1"
 service jail restart client1
+```
 
 # login to jail
 jexec -l client1 login -f root
 
 # test connectivity
+```
 host bsd.pw
 ping -c 3 bsd.pw
 ping -c 3 10.66.6.1
-
+```
 # grab a sample tcsh profile
+```
 fetch -o .tcshrc http://bsd.pw/config/tcshrc
 chsh -s tcsh
-
+```
 # exit the jail
 logout
 
