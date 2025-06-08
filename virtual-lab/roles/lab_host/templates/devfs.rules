@@ -1,0 +1,3 @@
+[devfsrules_jail_gateway=666]
+add include $devfsrules_jail_vnet
+add path 'bfp*' unhide

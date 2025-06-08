@@ -1,0 +1,2 @@
+# include other YAML files with tasks here
+- import_tasks: add_lab_client.yml

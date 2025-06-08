@@ -1,0 +1,8 @@
+python_version: "3.9"
+
+download_dir: /home/roller/Downloads
+
+domain_name: lab.bsd.pw
+
+gateway_hostname: gateway
+gateway_fqdn: "{{ gateway_hostname }}.{{ domain_name }}"

@@ -1,0 +1,2 @@
+# include other YAML files with tasks here
+- import_tasks: virtual_lab_setup.yml

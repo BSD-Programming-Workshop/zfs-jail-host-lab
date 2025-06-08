@@ -1,0 +1,97 @@
+# configure localhost to be a jail host for the virtual lab
+- name: edit jail.conf with new entry for client
+  blockinfile:
+    path: /etc/jail.conf
+    block: |
+      # - Settings for {{ lab_client_hostname }} - #
+      {{ lab_client_hostname }} {
+      vnet;
+      vnet.interface="e0b_$name";
+      exec.prestart+="/lab/scripts/jib addm $name labnet";
+      exec.poststop+="/lab/scripts/jib destroy $name";
+      devfs_ruleset=4;
+      depend="gateway";
+      }
+
+  become: yes
+
+- name: make the dataset for the jail
+  community.general.zfs:
+    name: lab/{{ lab_client_hostname }}
+    state: present
+  become: yes
+
+- name: Setup filesystem
+  command: tar -xpf /lab/media/13.2-RELEASE/base.txz -C /lab/{{ lab_client_hostname }}
+  become: yes
+
+- name: Add in the resolv.conf configuration
+  template:
+    src: resolv.conf
+    dest: /lab/{{ lab_client_hostname }}/etc/resolv.conf
+  become: yes
+
+- name: Add in the resolvconf.conf configuration
+  template:
+    src: resolvconf.conf
+    dest: /lab/{{ lab_client_hostname }}/etc/resolvconf.conf
+  become: yes
+
+- name: Copy the lab hosts time zone setting
+  copy:
+    src: /etc/localtime
+    dest: /lab/{{ lab_client_hostname }}/etc/
+  become: yes
+
+- name: make an empty file system table
+  file:
+    dest: /lab/{{ lab_client_hostname }}/etc/fstab
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  become: yes
+
+- name: start lab client jail
+  command: service jail start {{ lab_client_hostname }}
+  become: yes
+
+- name: setup jail internal LAN network interface
+  community.general.sysrc:
+    name: ifconfig_e0b_{{ lab_client_hostname }}
+    value: "inet 10.66.6.{{ ip_address }}/24"
+    jail: "{{ lab_client_hostname }}"
+  become: yes
+
+- name: setup jail routing
+  community.general.sysrc:
+    name: defaultrouter
+    value: "10.66.6.1"
+    jail: "{{ lab_client_hostname }}"
+  become: yes
+
+- name: restart jail
+  command: service jail restart {{ lab_client_hostname }}
+  become: yes
+     
+- name: Install py39-salt
+  community.general.pkgng:
+    name: py39-salt
+    state: latest
+    jail: "{{ lab_client_hostname }}"
+  become: yes
+
+- name: setup as a salt minion
+  community.general.sysrc:
+    name: salt_minion_enable
+    value: "YES"
+    jail: "{{ lab_client_hostname }}"
+  become: yes
+ 
+- name: start salt_minion service
+  shell: 'echo "master: 10.66.6.2" >> /lab/{{ lab_client_hostname }}/usr/local/etc/salt/minion && jexec -l {{ lab_client_hostname }} service salt_minion start'
+  become: yes
+
+- name: restart jail
+  command: service jail restart {{ lab_client_hostname }}
+  become: yes
+ 

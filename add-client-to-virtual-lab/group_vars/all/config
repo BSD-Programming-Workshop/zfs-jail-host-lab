@@ -1,0 +1,9 @@
+python_version: "3.9"
+
+download_dir: /home/roller/Downloads
+
+domain_name: lab.bsd.pw
+
+ip_address: 99
+
+lab_client_hostname: client

@@ -1,0 +1,313 @@
+# configure localhost to be a jail host for the virtual lab
+
+- name: Enable jail service on startup
+  community.general.sysrc:
+    name: jail_enable
+    value: "YES"
+  become: yes
+
+- name: Add in the lab host jail.conf configuration
+  template:
+    src: jail.conf
+    dest: /etc/jail.conf
+  become: yes
+
+- name: Download base.txz from FreeBSD.org for our lab machines to use
+  get_url:
+    url: http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/13.2-RELEASE/base.txz
+    dest: "{{ download_dir }}/base.txz"
+    force: false
+
+- name: Make a lab media dataset
+  community.general.zfs:
+    name: lab/media
+    state: present
+  become: yes
+
+- name: Make a release directory and copy base.txz into there
+  copy:
+    src: "{{ download_dir }}/base.txz"
+    dest: /lab/media/13.2-RELEASE/
+  become: yes
+      
+- name: Create gateway dataset
+  community.general.zfs:
+    name: lab/gateway
+    state: present
+  become: yes
+
+- name: Make extract idempotent for gateway filesystem
+  stat:
+    path: "/lab/gateway/COPYRIGHT"
+  register: gateway_base
+
+- name: Setup gateway filesystem
+  command: tar -xpf /lab/media/13.2-RELEASE/base.txz -C /lab/gateway
+  become: yes
+  when: not gateway_base.stat.exists
+
+- name: Add in the gateway resolv.conf configuration
+  template:
+    src: resolv.conf
+    dest: /lab/gateway/etc/resolv.conf
+  become: yes
+
+- name: Add in the gateway resolvconf.conf configuration
+  template:
+    src: resolvconf.conf
+    dest: /lab/gateway/etc/resolvconf.conf
+  become: yes
+
+- name: Copy the lab hosts time zone setting
+  copy:
+    src: /etc/localtime
+    dest: /lab/gateway/etc/
+  become: yes
+
+- name: Create empty file system table
+  file:
+    dest: /lab/gateway/etc/fstab
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  become: yes
+
+- name: Make devfs restart happen right away
+  stat:
+    path: "/etc/devfs.rules"
+  register: devfs_rules
+
+- name: Add in the devfs configuration
+  template:
+    src: devfs.rules
+    dest: /etc/devfs.rules
+  become: yes
+
+- name: restart devfs right away after adding the devfs.rules file
+  service:
+    name: devfs
+    state: restarted
+  when: not devfs_rules.stat.exists
+  become: yes
+
+- name: Load pf kernel module on startup
+  community.general.sysrc:
+    name: pf_load
+    value: "YES"
+    path: /boot/loader.conf
+  register: pf_kernel_module
+  become: yes
+
+- name: Load pf kernel module right away
+  command: kldload pf
+  when: pf_kernel_module.changed
+  become: yes
+
+- name: Add pf.conf to gateway jail
+  template:
+    src: pf.conf
+    dest: /lab/gateway/etc/pf.conf
+  become: yes
+
+- name: Network setup for virtual lab
+  community.general.sysrc:
+    name: ifconfig_igb0_name
+    value: lab0
+  register: rename_interface_to_lab0
+  become: yes
+
+- name: bring up network for virtual lab
+  community.general.sysrc:
+    name: ifconfig_lab0
+    value: up
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: LAN labnet setup for virtual lab
+  community.general.sysrc:
+    name: cloned_interfaces
+    value: vlan2
+  register: labnet_setup
+  become: yes
+
+- name: rename labnet for virtual lab
+  community.general.sysrc:
+    name: ifconfig_vlan2_name
+    value: labnet
+  when: labnet_setup.changed
+  become: yes
+
+- name: bring up labnet for virtual lab
+  community.general.sysrc:
+    name: ifconfig_labnet
+    value: up
+  when: labnet_setup.changed
+  become: yes
+
+- name: restart netif to complete virtual lab network setup
+  service:
+    name: netif
+    state: restarted
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: copy the Jail Interface Bridge automation script into our lab scripts directory and make it executable
+  copy:
+    src: /usr/share/examples/jails/jib
+    dest: /lab/scripts/
+    mode: 0554
+  become: yes
+
+- name: start gateway jail
+  command: service jail start gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: Enable pf on gateway jail
+  community.general.sysrc:
+    name: pf_enable
+    value: "YES"
+    jail: gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: setup gateway jail as a gateway
+  community.general.sysrc:
+    name: gateway_enable
+    value: "YES"
+    jail: gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: setup gateway jail external network interface
+  community.general.sysrc:
+    name: ifconfig_e0b_gateway
+    value: SYNCDHCP
+    jail: gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: setup gateway jail internal LAN network interface
+  community.general.sysrc:
+    name: ifconfig_e1b_gateway
+    value: "inet 10.66.6.1/24"
+    jail: gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: restart gateway jail
+  command: service jail restart gateway
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: make the dataset for the salt jail
+  community.general.zfs:
+    name: lab/salt
+    state: present
+  become: yes
+
+- name: Make extract idempotent for salt filesystem
+  stat:
+    path: "/lab/salt/COPYRIGHT"
+  register: salt_base
+
+- name: Setup salt filesystem
+  command: tar -xpf /lab/media/13.2-RELEASE/base.txz -C /lab/salt
+  become: yes
+  when: not salt_base.stat.exists
+
+- name: Add in the salt resolv.conf configuration
+  template:
+    src: resolv.conf
+    dest: /lab/salt/etc/resolv.conf
+  become: yes
+
+- name: Add in the salt resolvconf.conf configuration
+  template:
+    src: resolvconf.conf
+    dest: /lab/salt/etc/resolvconf.conf
+  become: yes
+
+- name: Copy the lab hosts time zone setting to salt
+  copy:
+    src: /etc/localtime
+    dest: /lab/salt/etc/
+  become: yes
+
+- name: Create empty file system table for salt
+  file:
+    dest: /lab/salt/etc/fstab
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  become: yes
+
+- name: start salt jail
+  command: service jail start salt
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: setup salt jail internal LAN network interface
+  community.general.sysrc:
+    name: ifconfig_e0b_salt
+    value: "inet 10.66.6.2/24"
+    jail: salt
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: setup salt jail routing
+  community.general.sysrc:
+    name: defaultrouter
+    value: "10.66.6.1"
+    jail: salt
+  when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: restart salt jail
+  command: service jail restart salt
+  when: rename_interface_to_lab0.changed
+  become: yes
+     
+- name: Install py39-salt on salt
+  community.general.pkgng:
+    name: py39-salt
+    state: latest
+    jail: salt
+  register: salt_installed_on_salt_master
+  become: yes
+
+- name: copy salt master configuration into place
+  template:
+    src: master
+    dest: /lab/salt/usr/local/etc/salt/master
+  when: salt_installed_on_salt_master.changed
+  become: yes
+
+- name: setup salt master
+  community.general.sysrc:
+    name: salt_master_enable
+    value: "YES"
+    jail: salt
+  when: salt_installed_on_salt_master.changed
+  become: yes
+
+- name: setup salt master as minion
+  community.general.sysrc:
+    name: salt_minion_enable
+    value: "YES"
+    jail: salt
+  when: salt_installed_on_salt_master.changed
+  become: yes
+ 
+- name: copy salt states into place
+  copy:
+    src: /usr/home/roller/Projects/lab/lab/virtual-lab/roles/lab_host/states
+    dest: /lab/salt/usr/local/etc/salt/
+  when: salt_installed_on_salt_master.changed
+  become: yes
+
+- name: start salt service
+  shell: 'jexec -l salt service salt_master start && echo "master: 10.66.6.2" >> /lab/salt/usr/local/etc/salt/minion && jexec -l salt service salt_minion start'
+  when: salt_installed_on_salt_master.changed
+  become: yes
+
