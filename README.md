@@ -145,6 +145,7 @@ vim /etc/jail.conf
 
 # put the following into /etc/jail.conf
 
+```
 $labdir="/lab";
 $domain="lab.bsd.pw";
 path="$labdir/$name";
@@ -156,6 +157,7 @@ exec.timeout=90;
 stop.timeout=30;
 mount.devfs;
 exec.consolelog="/var/tmp/${host.hostname}";
+```
 
 ### base.txz - this is the base system image that we'll use to create our jails, swap 13.1-RELEASE for the version you're using
 sudo -i
@@ -186,8 +188,10 @@ chroot /lab/gateway passwd root
 vim /lab/gateway/etc/resolv.conf
 
 # add the following lines to resolv.conf
+```
 nameserver 208.67.222.222
 nameserver 208.67.220.220
+```
 
 # copy the hosts time zone setting
 cp /etc/localtime /lab/gateway/etc/
@@ -211,9 +215,11 @@ jail -vr gateway
 vim /etc/devfs.rules
 
 # add the following lines to devfs.rules
+```
 [devfsrules_jail_gateway=666]
 add include $devfsrules_jail_vnet
 add path 'bpf*' unhide
+```
 
 # restart devfs
 service devfs restart
@@ -225,7 +231,9 @@ devfs rule showsets
 vim /etc/jail.conf
 
 # add the following line to the gateway { } config block
+```
   devfs_ruleset=666;
+```
 
 # restart the gateway jail
 service jail restart gateway
@@ -297,6 +305,7 @@ chmod +x /lab/scripts/jib
 
 
 # Gateway jail.conf entry
+```
 gateway {
   vnet;
   vnet.interface=e0b_$name, e1b_$name;
@@ -304,6 +313,7 @@ gateway {
   exec.poststop+="/lab/scripts/jib destroy $name";
   devfs_ruleset=666;
 }
+```
 
 # create the internal LAN network for the jails in the lab
 sysrc cloned_interfaces=lo1
@@ -327,6 +337,7 @@ jexec -l gateway login -f root
 vim /etc/jail.conf
 
 # add the following to the bottom of the file
+```
 client1 {
   vnet;
   vnet.interface="e0b_$name";
@@ -335,6 +346,7 @@ client1 {
   devfs_ruleset=4;
   depend="gateway";
 }
+```
 
 # make the directory structure for the new jail
 mkdir /lab/client1
@@ -348,8 +360,10 @@ chroot /lab/client1 passwd root
 vim /lab/client1/etc/resolv.conf
 
 # add the following lines to resolv.conf
+```
 nameserver 208.67.222.222
 nameserver 208.67.220.220
+```
 
 # copy the hosts time zone setting
 cp /etc/localtime /lab/client1/etc/
