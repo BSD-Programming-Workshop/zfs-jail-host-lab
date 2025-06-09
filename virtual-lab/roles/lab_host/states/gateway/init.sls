@@ -66,4 +66,3 @@ reload_pf:
     - name: pfctl -f /etc/pf.conf
     - require:
       - file: /etc/pf.conf
-      - service: pf
