@@ -18,12 +18,6 @@ ifconfig_e2b_gateway:
         ifconfig_e2b_gateway: "inet 192.168.66.1/24"
 
 # Services
-salt_minion:
-  service.enabled:
-    - name: salt_minion
-    - sysrc:
-        salt_minion_enable: "YES"
-
 dhcpd:
   pkg.installed:
     - name: dhcpd
@@ -78,14 +72,12 @@ reload_pf:
       - file: /etc/pf.conf
 
 # Ensure services are running
-ensure_services_running:
+ensure_gateway_services_running:
   service.running:
     - names:
-      - salt_minion
       - dhcpd
       - pf
     - enable: true
     - watch:
-      - service: salt_minion
       - service: dhcpd
       - service: pf

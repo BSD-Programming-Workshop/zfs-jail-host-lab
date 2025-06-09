@@ -7,16 +7,16 @@ base_packages:
       - sudo
       - openssl
       - python311
+      - py311-cryptography
+      - py311-salt
       - pkg
       - vim
 
 salt_minion:
-  pkg.latest:
-    - name: py311-salt
-  service.running:
-    - enable: true
-    - watch:
-      - pkg: py311-salt
+  service.enabled:
+    - name: salt_minion
+    - sysrc:
+        salt_minion_enable: "YES"
 
 #removed since we aren't really re-configuring minion
 #salt_minion:
@@ -67,3 +67,12 @@ sendmail_msp_queue_enable:
   sysrc.managed:
     - value: "NO"
     - file: /etc/rc.conf.local
+
+# Ensure services are running
+ensure_base_services_running:
+  service.running:
+    - names:
+      - salt_minion
+    - enable: true
+    - watch:
+      - service: salt_minion
