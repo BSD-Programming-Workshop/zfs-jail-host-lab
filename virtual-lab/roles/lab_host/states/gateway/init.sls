@@ -1,53 +1,49 @@
 # Network configuration
 ifconfig_e0b_gateway:
-  service.enabled:
-    - name: ifconfig_e0b_gateway
-    - sysrc:
-        ifconfig_e0b_gateway: "SYNCDHCP"
+  sysrc.managed:
+    - value: "SYNCDHCP"
 
 ifconfig_e1b_gateway:
-  service.enabled:
-    - name: ifconfig_e1b_gateway
-    - sysrc:
-        ifconfig_e1b_gateway: "inet 10.66.6.1/24"
+  sysrc.managed:
+    - value: "inet 10.66.6.1/24"
 
 ifconfig_e2b_gateway:
-  service.enabled:
-    - name: ifconfig_e2b_gateway
-    - sysrc:
-        ifconfig_e2b_gateway: "inet 192.168.66.1/24"
+  sysrc.managed:
+    - value: "inet 192.168.66.1/24"
 
 # Services
 dhcpd:
-  pkg.installed:
+  pkg.latest:
     - name: dhcpd
     - require:
-      - service: ifconfig_e1b_gateway
-      - service: ifconfig_e2b_gateway
+      - sysrc: ifconfig_e1b_gateway
+      - sysrc: ifconfig_e2b_gateway
 
 dhcpd_service:
-  service.enabled:
-    - name: dhcpd
-    - sysrc:
-        dhcpd_enable: "YES"
+  sysrc.managed:
+    - value: "YES"
+    - name: dhcpd_enable
     - require:
       - pkg: dhcpd
       - file: /usr/local/etc/dhcpd.conf
+      - file: /etc/pf.conf
     - watch:
       - file: /usr/local/etc/dhcpd.conf
 
 pf:
-  service.enabled:
-    - name: pf
-    - sysrc:
-        pf_enable: "YES"
-        pflog_enable: "YES"
+  sysrc.managed:
+    - value: "YES"
+    - name: pf_enable
+
+pflog:
+  sysrc.managed:
+    - value: "YES"
+    - name: pflog_enable
 
 gateway_enable:
-  service.enabled:
+  sysrc.managed:
+    - value: "YES"
     - name: gateway_enable
-    - sysrc:
-        gateway_enable: "YES"
 
 /usr/local/etc/dhcpd.conf:
   file.managed:
@@ -55,6 +51,8 @@ gateway_enable:
     - user: root
     - group: wheel
     - mode: 644
+    - watch:
+      - file: /etc/pf.conf
 
 /etc/pf.conf:
   file.managed:
