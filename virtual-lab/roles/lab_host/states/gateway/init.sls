@@ -58,12 +58,12 @@ gateway_enable:
     - user: root
     - group: wheel
     - mode: 600
-    - onchanges:
+    - require_in:
       - cmd: reload_pf
 
 reload_pf:
   cmd.run:
     - name: pfctl -f /etc/pf.conf
-    - onchanges:
+    - require:
       - file: /etc/pf.conf
       - service: pf
