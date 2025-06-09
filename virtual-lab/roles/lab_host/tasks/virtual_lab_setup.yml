@@ -121,7 +121,7 @@
 
 - name: Network setup for virtual lab
   community.general.sysrc:
-    name: ifconfig_igb0_name
+    name: ifconfig_{{ network_interface}}_name
     value: lab0
   register: rename_interface_to_lab0
   become: yes

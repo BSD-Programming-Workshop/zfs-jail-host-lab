@@ -4,6 +4,8 @@ freebsd_version: "14.2"
 
 zfs_pool: "storage0"
 
+network_interface: "em2"
+
 download_dir: /home/roller/Downloads
 
 domain_name: lab.bsd.pw
