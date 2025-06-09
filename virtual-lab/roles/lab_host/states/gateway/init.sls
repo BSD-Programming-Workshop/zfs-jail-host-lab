@@ -58,12 +58,12 @@ gateway_enable:
     - user: root
     - group: wheel
     - mode: 600
-    - watch:
+    - onchanges:
       - cmd: reload_pf
 
 reload_pf:
-  cmd.wait:
+  cmd.run:
     - name: pfctl -f /etc/pf.conf
-    - watch:
+    - onchanges:
       - file: /etc/pf.conf
       - service: pf
