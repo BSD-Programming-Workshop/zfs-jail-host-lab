@@ -68,11 +68,4 @@ sendmail_msp_queue_enable:
     - value: "NO"
     - file: /etc/rc.conf.local
 
-# Ensure services are running
-ensure_base_services_running:
-  service.running:
-    - names:
-      - salt_minion
-    - enable: true
-    - watch:
-      - service: salt_minion
+
