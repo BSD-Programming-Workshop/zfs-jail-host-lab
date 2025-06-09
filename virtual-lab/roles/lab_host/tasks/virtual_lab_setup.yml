@@ -288,6 +288,13 @@
   register: salt_installed_on_salt_master
   become: yes
 
+- name: Install py-cryptography on salt
+  community.general.pkgng:
+    name: py{{ python_version|replace('.', '') }}-cryptography
+    state: latest
+    jail: salt
+  become: yes
+
 - name: copy salt master configuration into place
   template:
     src: master
@@ -318,8 +325,32 @@
   when: salt_installed_on_salt_master.changed
   become: yes
 
-- name: start salt service
+- name: start salt service on salt
   shell: 'jexec -l salt service salt_master start && echo "master: 10.66.6.2" >> /lab/salt/usr/local/etc/salt/minion && jexec -l salt service salt_minion start'
   when: salt_installed_on_salt_master.changed
   become: yes
 
+- name: Install py-salt on gateway
+  community.general.pkgng:
+    name: py{{ python_version|replace('.', '') }}-salt
+    state: latest
+    jail: gateway
+  become: yes
+
+- name: Install py-cryptography on gateway
+  community.general.pkgng:
+    name: py{{ python_version|replace('.', '') }}-cryptography
+    state: latest
+    jail: gateway
+  become: yes
+
+- name: setup gateway as minion
+  community.general.sysrc:
+    name: salt_minion_enable
+    value: "YES"
+    jail: gateway
+  become: yes
+
+- name: start salt service on gateway
+  shell: 'echo "master: 10.66.6.2" >> /lab/gateway/usr/local/etc/salt/minion && jexec -l gateway service salt_minion start'
+  become: yes
