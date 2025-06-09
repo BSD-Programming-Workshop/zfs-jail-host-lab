@@ -51,8 +51,6 @@ gateway_enable:
     - user: root
     - group: wheel
     - mode: 644
-    - watch:
-      - file: /etc/pf.conf
 
 /etc/pf.conf:
   file.managed:
@@ -60,7 +58,7 @@ gateway_enable:
     - user: root
     - group: wheel
     - mode: 600
-    - watch_in:
+    - watch:
       - cmd: reload_pf
 
 reload_pf:
