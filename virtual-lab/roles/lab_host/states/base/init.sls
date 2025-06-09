@@ -6,22 +6,22 @@ base_packages:
       - ca_root_nss
       - sudo
       - openssl
-      - python39
+      - python311
       - pkg
       - vim
 
 salt_minion:
   pkg.latest:
-    - name: py39-salt
+    - name: py311-salt
   service.running:
     - enable: true
     - watch:
-      - pkg: py39-salt
+      - pkg: py311-salt
 
 #removed since we aren't really re-configuring minion
 #salt_minion:
 #  pkg.latest:
-#    - name: py39-salt
+#    - name: py311-salt
 #  file.managed:
 #    - template: jinja
 #    - source: salt://base/usr/local/etc/salt/minion.j2
@@ -29,7 +29,7 @@ salt_minion:
 #  service.running:
 #    - enable: true
 #    - watch_any:
-#      - pkg: py39-salt
+#      - pkg: py311-salt
 #      - file: /usr/local/etc/salt/minion
 
 localhost:

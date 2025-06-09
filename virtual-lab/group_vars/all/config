@@ -4,7 +4,8 @@ freebsd_version: "14.2"
 
 zfs_pool: "storage0"
 
-network_interface: "em2"
+network_interface: "em0"
+home_network_interface: "em1"
 
 download_dir: /home/roller/Downloads
 

@@ -121,7 +121,7 @@
 
 - name: Network setup for virtual lab
   community.general.sysrc:
-    name: ifconfig_{{ network_interface}}_name
+    name: ifconfig_{{ network_interface }}_name
     value: lab0
   register: rename_interface_to_lab0
   become: yes
@@ -131,6 +131,20 @@
     name: ifconfig_lab0
     value: up
   when: rename_interface_to_lab0.changed
+  become: yes
+
+- name: Network setup for home
+  community.general.sysrc:
+    name: ifconfig_{{ home_network_interface }}_name
+    value: home0
+  register: rename_interface_to_home0
+  become: yes
+
+- name: bring up network for home
+  community.general.sysrc:
+    name: ifconfig_home0
+    value: up
+  when: rename_interface_to_home0.changed
   become: yes
 
 - name: LAN labnet setup for virtual lab
