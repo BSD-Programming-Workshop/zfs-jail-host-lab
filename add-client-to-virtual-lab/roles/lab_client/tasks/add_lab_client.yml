@@ -17,12 +17,12 @@
 
 - name: make the dataset for the jail
   community.general.zfs:
-    name: lab/{{ lab_client_hostname }}
+    name: "{{ zfs_pool }}/lab/{{ lab_client_hostname }}"
     state: present
   become: yes
 
 - name: Setup filesystem
-  command: tar -xpf /lab/media/13.2-RELEASE/base.txz -C /lab/{{ lab_client_hostname }}
+  command: tar -xpf /lab/media/{{ freebsd_version }}-RELEASE/base.txz -C /lab/{{ lab_client_hostname }}
   become: yes
 
 - name: Add in the resolv.conf configuration
@@ -73,9 +73,16 @@
   command: service jail restart {{ lab_client_hostname }}
   become: yes
      
-- name: Install py39-salt
+- name: Install py311-salt
   community.general.pkgng:
-    name: py39-salt
+    name: py311-salt
+    state: latest
+    jail: "{{ lab_client_hostname }}"
+  become: yes
+
+- name: Install py311-cryptography
+  community.general.pkgng:
+    name: py311-cryptography
     state: latest
     jail: "{{ lab_client_hostname }}"
   become: yes

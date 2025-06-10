@@ -1,6 +1,8 @@
-python_version: "3.9"
+python_version: "3.11"
 
-download_dir: /home/roller/Downloads
+freebsd_version: "14.2"
+
+zfs_pool: "storage0"
 
 domain_name: lab.bsd.pw
 
