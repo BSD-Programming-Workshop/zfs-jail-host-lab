@@ -1,0 +1,22 @@
+- name: Install py311-salt
+  community.general.pkgng:
+    name: py311-salt
+    state: latest
+  become: yes
+
+- name: Install py311-cryptography
+  community.general.pkgng:
+    name: py311-cryptography
+    state: latest
+  become: yes
+
+- name: setup as a salt minion
+  community.general.sysrc:
+    name: salt_minion_enable
+    value: "YES"
+  become: yes
+ 
+- name: start salt_minion service
+  shell: 'echo "master: 10.66.6.2" >> /usr/local/etc/salt/minion && service salt_minion start'
+  become: yes
+ 

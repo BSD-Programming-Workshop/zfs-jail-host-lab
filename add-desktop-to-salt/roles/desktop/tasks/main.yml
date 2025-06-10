@@ -1,0 +1,2 @@
+# include other YAML files with tasks here
+- import_tasks: add_desktop_to_salt.yml

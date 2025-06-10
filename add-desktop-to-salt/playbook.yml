@@ -1,0 +1,6 @@
+# high level instructions for which tasks apply to which hosts
+- name: Add Desktop Client to Salt
+  gather_facts: false
+  hosts: all
+  roles:
+    - lab_client
