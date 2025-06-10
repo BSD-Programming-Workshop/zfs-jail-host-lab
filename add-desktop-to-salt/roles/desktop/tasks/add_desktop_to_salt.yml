@@ -1,4 +1,8 @@
 ---
+- name: Install Python 3.11 using raw module
+  ansible.builtin.raw: pkg install -y python311
+  become: yes
+
 - name: Install sudo
   community.general.pkgng:
     name: sudo
