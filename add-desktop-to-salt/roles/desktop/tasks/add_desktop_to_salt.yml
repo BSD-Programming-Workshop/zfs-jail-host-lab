@@ -1,3 +1,17 @@
+---
+- name: Install sudo
+  community.general.pkgng:
+    name: sudo
+    state: present
+  become: yes
+
+- name: Configure sudoers using template
+  ansible.builtin.template:
+    src: sudoers
+    dest: /usr/local/etc/sudoers
+    mode: '0440'
+  become: yes
+
 - name: Install py311-salt
   community.general.pkgng:
     name: py311-salt
