@@ -334,7 +334,7 @@
  
 - name: copy salt states into place
   copy:
-    src: /home/roller/zfs-jail-host-lab/virtual-lab/roles/lab_host/states
+    src: /home/{{ username }}/zfs-jail-host-lab/virtual-lab/roles/lab_host/states
     dest: /lab/salt/usr/local/etc/salt/
   when: salt_installed_on_salt_master.changed
   become: yes

@@ -1,13 +1,13 @@
-roller:
+{{ username }}:
   user.present:
     - fullname: Roller Angel
     - shell: /bin/tcsh
-    - home: /home/roller
+    - home: /home/{{ username }}
     - uid: 1001
     - gid: wheel
     - empty_password: True
   ssh_auth.manage:
-    - user: roller
+    - user: {{ username }}
     - enc: ed25519
     - ssh_keys:
       - AAAAC3NzaC1lZDI1NTE5AAAAIJr6OPJeXUJzmDwIEgz7mbegmXQSBurn2xCIKlgDmrS3

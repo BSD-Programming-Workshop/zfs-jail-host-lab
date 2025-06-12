@@ -30,9 +30,9 @@ machine_id:
 # X11 configuration
 xinitrc:
   file.managed:
-    - name: /home/roller/.xinitrc
+    - name: /home/{{ username }}/.xinitrc
     - contents: "exec startxfce4"
-    - user: roller
+    - user: {{ username }}
     - group: wheel
     - mode: 0644
     - require:
