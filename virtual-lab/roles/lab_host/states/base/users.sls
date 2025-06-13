@@ -16,6 +16,8 @@ roller_user:
     - gid: roller
     - groups:
       - wheel
+      - operator
+      - video
     - empty_password: True
     - createhome: True
 

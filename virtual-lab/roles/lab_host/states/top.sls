@@ -12,6 +12,5 @@ base:
 
   'freebsd-x1-carbon':
     - desktop
-    - desktop.users
     - desktop.xorg
     - desktop.virtualbox
