@@ -7,9 +7,7 @@ zfs_pool: "storage0"
 network_interface: "em0"
 home_network_interface: "em1"
 
-username: "roller"
-
-download_dir: /home/{{ username }}/Downloads
+download_dir: /home/roller/Downloads
 
 domain_name: lab.bsd.pw
 
