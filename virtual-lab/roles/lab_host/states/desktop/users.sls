@@ -1,10 +1,10 @@
 # Ensure roller is in additional groups for desktop functionality
-roller_user_groups:
+roller_user_desktop_groups:
   user.present:
     - name: roller
     - groups:
+      - wheel
       - operator
       - video
-    - append: true
     - require:
       - user: roller_user
