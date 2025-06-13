@@ -10,7 +10,7 @@ base:
   'update.lab.bsd.pw':
     - update
 
-  'x1-carbon.lab.bsd.pw':
+  'freebsd-x1-carbon':
     - desktop
     - desktop.users
     - desktop.xorg
