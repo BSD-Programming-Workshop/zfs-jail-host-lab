@@ -8,6 +8,7 @@
   community.general.pkgng:
     name: sudo
     state: present
+  become_method: su
   become: yes
 
 - name: Configure sudoers using template
@@ -15,6 +16,7 @@
     src: sudoers
     dest: /usr/local/etc/sudoers
     mode: '0440'
+  become_method: su
   become: yes
 
 - name: Install py311-salt
