@@ -19,8 +19,7 @@ dbus:
 xinitrc:
   file.managed:
     - name: /home/roller/.xinitrc
-    - contents: |
-      exec startxfce4
+    - contents: exec startxfce4
     - user: roller
     - group: roller
     - mode: 0644
