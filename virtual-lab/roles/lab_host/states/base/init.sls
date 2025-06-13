@@ -10,7 +10,11 @@ base_packages:
       - py311-cryptography
       - py311-salt
       - pkg
-      - vim
+
+vim:
+  pkg.installed:
+    - name: vim
+    - unless: "pkg info vim-x11"
 
 salt_minion:
   service.enabled:
