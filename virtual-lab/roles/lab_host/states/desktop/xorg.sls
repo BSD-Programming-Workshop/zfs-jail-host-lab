@@ -11,13 +11,13 @@ xorg_packages:
       - git-lite
 
 # Create machine-id for dbus
-machine_id:
-  file.managed:
-    - name: /etc/machine-id
-    - contents: "{{ salt['cmd.run']('dbus-uuidgen') }}"
-    - mode: 0444
-    - require:
-      - pkg: xorg_packages
+#machine_id:
+#  file.managed:
+#    - name: /etc/machine-id
+#    - contents: "{{ salt['cmd.run']('dbus-uuidgen') }}"
+#    - mode: 0444
+#    - require:
+#      - pkg: xorg_packages
 
 dbus:
   sysrc.managed:
