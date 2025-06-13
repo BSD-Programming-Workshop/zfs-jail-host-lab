@@ -11,6 +11,7 @@ base:
     - update
 
   'x1-carbon.lab.bsd.pw':
-    - x1-carbon
     - desktop
-    - desktop.intel
+    - desktop.users
+    - desktop.xorg
+    - desktop.virtualbox
