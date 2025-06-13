@@ -1,6 +1,7 @@
 ---
 - name: Install Python 3.11 using raw module
   ansible.builtin.raw: pkg install -y python311
+  become_method: su
   become: yes
 
 - name: Install sudo
