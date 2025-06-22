@@ -3,6 +3,10 @@
 
 A comprehensive set of Ansible playbooks for setting up and managing FreeBSD Jails in a Lab environment.
 
+## Video Walkthrough
+
+Watch the complete walkthrough of setting up this environment in VirtualBox: [YouTube Video](https://youtu.be/uyQN-KWn1VM)
+
 ## Discussion happening over at https://github.com/possnfiffer/bsd-programming-workshop/discussions/6
 
 
@@ -14,50 +18,121 @@ Our virtual lab will consist of a FreeBSD Host system that uses the FreeBSD Jail
 
 ```
 .
-├── virtual-lab/                # Main lab setup playbook
+├── virtual-lab/                    # Main lab setup playbook
 │   ├── ansible.cfg
 │   ├── hosts
 │   ├── group_vars/
 │   │   └── all/
-│   │       └── config         # Configuration variables
+│   │       └── config             # Configuration variables
 │   ├── roles/
 │   │   └── lab_host/
-│   │       ├── states/        # Salt states for lab host
+│   │       ├── states/           # Salt states for lab host
 │   │       │   ├── base/
-│   │       │   │   ├── etc/   # Base configuration files
+│   │       │   │   ├── etc/      # Base configuration files
 │   │       │   │   ├── init.sls  # Base initialization
-│   │       │   │   ├── users.sls  # User configuration
-│   │       │   │   └── minion.j2  # Salt minion configuration
+│   │       │   │   ├── users.sls # User configuration
+│   │       │   │   └── minion.j2 # Salt minion configuration
 │   │       │   └── update/
-│   │       │       ├── etc/    # Update configuration files
+│   │       │       ├── etc/      # Update configuration files
 │   │       │       ├── init.sls  # Update initialization
-│   │       │       └── httpd.conf  # Apache configuration
-│   │       ├── tasks/        # Ansible tasks
-│   │       │   └── main.yml  # Main task file
-│   │       └── templates/    # Configuration templates
-│   │           ├── devfs.rules    # Device file system rules
-│   │           ├── jail.conf     # Jail configuration
-│   │           ├── master        # Salt master configuration
+│   │       │       └── httpd.conf # Apache configuration
+│   │       ├── tasks/           # Ansible tasks
+│   │       │   └── main.yml     # Main task file
+│   │       └── templates/       # Configuration templates
+│   │           ├── devfs.rules  # Device file system rules
+│   │           ├── jail.conf    # Jail configuration
+│   │           ├── master       # Salt master configuration
 │   │           ├── pf.conf      # Packet filter configuration
 │   │           ├── resolv.conf  # DNS resolver configuration
-│   │           └── resolvconf.conf  # Resolver configuration
+│   │           └── resolvconf.conf # Resolver configuration
 │   └── playbook.yml
-├── add-client-to-virtual-lab/  # Playbook for adding additional jails
+├── add-client-to-virtual-lab/     # Playbook for adding additional jails
 │   ├── ansible.cfg
 │   ├── hosts
 │   ├── group_vars/
 │   │   └── all/
-│   │       └── config         # Configuration variables
+│   │       └── config            # Configuration variables
 │   ├── roles/
 │   │   └── lab_client/
-│   │       ├── tasks/        # Ansible tasks
-│   │       │   ├── main.yml  # Main task file
-│   │       │   └── add_lab_client.yml  # Jail addition tasks
-│   │       └── templates/    # Configuration templates
+│   │       ├── tasks/           # Ansible tasks
+│   │       │   ├── main.yml     # Main task file
+│   │       │   └── add_lab_client.yml # Jail addition tasks
+│   │       └── templates/       # Configuration templates
 │   │           ├── resolv.conf  # DNS resolver configuration
-│   │           └── resolvconf.conf  # Resolver configuration
+│   │           └── resolvconf.conf # Resolver configuration
 │   └── playbook.yml
+├── add-desktop-to-salt/           # Playbook for adding desktop to Salt
+│   ├── ansible.cfg
+│   ├── hosts
+│   ├── group_vars/
+│   │   └── all/
+│   │       └── config            # Configuration variables
+│   ├── roles/
+│   │   └── desktop/
+│   │       ├── tasks/           # Ansible tasks
+│   │       │   └── main.yml     # Main task file
+│   │       └── templates/       # Configuration templates
+│   │           └── desktop.conf # Desktop configuration
+│   └── playbook.yml
+├── .gitignore
+├── LICENSE
 └── README.md
+```
+
+## User Configuration
+
+By default, this repository uses a user named 'roller' for configuration. After running the automation, you can modify the `/usr/local/etc/salt/states/base/users.sls` file on the salt jail to remove the roller user and add your own user. Here's an example of how to replace roller with a user named 'bob':
+
+```yaml
+# Remove roller user and group
+roller_user:
+  user.absent:
+    - name: roller
+    - purge: true
+
+roller_group:
+  group.absent:
+    - name: roller
+
+# Add your own user (example uses 'bob')
+bob_group:
+  group.present:
+    - name: bob
+
+bob_user:
+  user.present:
+    - name: bob
+    - fullname: Bob User
+    - shell: /bin/tcsh
+    - home: /home/bob
+    - gid: bob
+    - groups:
+      - wheel
+      - operator
+      - video
+    - empty_password: True
+    - createhome: True
+
+bob_ssh_key:
+  ssh_auth.manage:
+    - user: bob
+    - enc: ed25519
+    - ssh_keys:
+      - AAAAC3NzaC1lZDI1NTE5AAAAIJr6OPJeXUJzmDwIEgz7mbegmXQSBurn2xCIKlgDmrS3
+```
+
+**Note:** The default configuration uses an empty password and an example of an ed25519 ssh key. Generate your own public/private key pair and replace the ssh_keys value with your public key. The command to make a ed25519 key pair is:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
+```
+
+Copy ~/.ssh/id_ed25519.pub to the ssh_keys value in the users.sls file
+
+To set a password for your user, run the following command and replace `empty_password: True` with `password: ` and the output of the following command:
+
+```bash
+openssl passwd -6
 ```
 
 ## Usage
@@ -113,6 +188,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 5. Open a Pull Request
 
 
+---
+
+The following content is taken from my FreeBSD Journal article in the Jan/Feb 2023 edition. You can find the full article at: [Virtual Lab - FreeBSD Journal](https://freebsdfoundation.org/wp-content/uploads/2023/02/angel_virtuallab.pdf) keep in mind this article is a bit old and some of the commands and configuration options may have changed from what you find in this repository.
 
 ### Understanding the processors you have in your FreeBSD Host for use in the lab
 
